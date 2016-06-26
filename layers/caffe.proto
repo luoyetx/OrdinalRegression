@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package caffe;
+
+message LayerParameter {
+  optional OrdinalRegressionParameter ordinal_regression_loss_param = 147;
+}
+
+message OrdinalRegressionParameter {
+  optional uint32 k = 1;
+  optional string weight_file = 2;
+}
