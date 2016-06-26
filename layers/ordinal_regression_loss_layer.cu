@@ -62,15 +62,13 @@ __global__ void kernel_ordreg_backward(const int k,
   const Dtype this_weight = weight[label_idx];
   Dtype* dx_data = dx + offset;
   if (label_idx < this_label) {
-    dx_data[0] *= this_weight;
     dx_data[1] -= 1;
-    dx_data[1] *= this_weight;
   }
   else {
     dx_data[0] -= 1;
-    dx_data[1] *= this_weight;
-    dx_data[1] *= this_weight;
   }
+  dx_data[0] *= this_weight;
+  dx_data[1] *= this_weight;
 }
 
 template<typename Dtype>
