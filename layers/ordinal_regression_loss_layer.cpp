@@ -11,20 +11,34 @@ void OrdinalRegressionLossLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   // k
-  k_ = this->layer_param_.ordinal_regression_loss_param().k();
+  bool has_k = this->layer_param_.ordinal_regression_loss_param().has_k();
+  if (has_k) {
+    k_ = this->layer_param_.ordinal_regression_loss_param().k();
+  }
+  else {
+    k_ = bottom[0]->shape(1) / 2;
+  }
   // weight for every label
-  string weight_file = this->layer_param_.ordinal_regression_loss_param().weight_file();
-  std::ifstream fin;
-  fin.open(weight_file.c_str());
-  Dtype weight;
   vector<int> shape(1, k_);
   weight_.Reshape(shape);
   Dtype* weight_data = weight_.mutable_cpu_data();
-  for (int i = 0; i < k_; i++) {
-    fin >> weight;
-    weight_data[i] = weight;
+  bool has_weight_file = this->layer_param_.ordinal_regression_loss_param().has_weight_file();
+  if (has_weight_file) {
+    string weight_file = this->layer_param_.ordinal_regression_loss_param().weight_file();
+    std::ifstream fin;
+    fin.open(weight_file.c_str());
+    Dtype weight;
+    for (int i = 0; i < k_; i++) {
+      fin >> weight;
+      weight_data[i] = weight;
+    }
+    fin.close();
   }
-  fin.close();
+  else {
+    for (int i = 0; i < k_; i++) {
+      weight_data[i] = 1;
+    }
+  }
 }
 
 template<typename Dtype>
@@ -91,12 +105,12 @@ void OrdinalRegressionLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>&
       Dtype* dx = bottom_diff + offset;
       const int label = static_cast<int>(label_data[i]);
       for (int j = 0; j < label; j++) {
-        dx[2*j] *= weight_data[j];
         dx[2*j+1] -= 1;
-        dx[2*j+1] *= weight_data[j];
       }
       for (int j = label; j < k_; j++) {
         dx[2*j] -= 1;
+      }
+      for (int j = 0; j < k_; j++) {
         dx[2*j] *= weight_data[j];
         dx[2*j+1] *= weight_data[j];
       }
