@@ -16,18 +16,18 @@ __global__ void kernel_ordreg_forward(const int k, const int n,
     const Dtype* x_data = x + offset;
     Dtype* y_data = y + offset;
     Dtype* loss_data = loss + offset;
-    Dtype max_input = max(x_data[0], x_data[1]);
+    const Dtype max_input = max(x_data[0], x_data[1]);
     y_data[0] = exp(x_data[0] - max_input);
     y_data[1] = exp(x_data[1] - max_input);
-    Dtype sum = y_data[0] + y_data[1];
+    const Dtype sum = y_data[0] + y_data[1];
     y_data[0] /= sum;
     y_data[1] /= sum;
-    if (label_idx < this_label) {
+    if (label_idx <= this_label) {
       loss_data[0] = 0;
-      loss_data[1] = -log(max(y[1], Dtype(FLT_MIN)));
+      loss_data[1] = -log(max(y_data[1], Dtype(FLT_MIN)));
     }
     else {
-      loss_data[0] = -log(max(y[0], Dtype(FLT_MIN)));
+      loss_data[0] = -log(max(y_data[0], Dtype(FLT_MIN)));
       loss_data[1] = 0;
     }
     loss_data[0] *= this_weight;
@@ -62,7 +62,7 @@ __global__ void kernel_ordreg_backward(const int k, const int n,
     const int this_label = static_cast<int>(label[sample_idx]);
     const Dtype this_weight = weight[label_idx];
     Dtype* dx_data = dx + offset;
-    if (label_idx < this_label) {
+    if (label_idx <= this_label) {
       dx_data[1] -= 1;
     }
     else {

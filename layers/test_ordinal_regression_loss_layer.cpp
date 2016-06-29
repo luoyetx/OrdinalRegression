@@ -23,6 +23,7 @@ class OrdinalRegressionLossLayerTest : public MultiDeviceTest<TypeParam> {
       : blob_bottom_data_(new Blob<Dtype>(100, 200, 1, 1)),
         blob_bottom_label_(new Blob<Dtype>(100, 1, 1, 1)),
         blob_top_loss_(new Blob<Dtype>()) {
+    Caffe::set_random_seed(0);
     FillerParameter filler_param;
     filler_param.set_std(10);
     GaussianFiller<Dtype> filler(filler_param);
@@ -67,6 +68,17 @@ TYPED_TEST(OrdinalRegressionLossLayerTest, TestForward) {
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   Dtype loss = this->blob_top_loss_->cpu_data()[0];
+
+  std::cout << loss << endl;
+
+  const Blob<Dtype>* prob = layer->prob();
+  const Dtype* prob_data = prob->cpu_data();
+
+  std::cout << prob_data[0] << " " << prob_data[1] << endl;
+  std::cout << prob_data[2] << " " << prob_data[3] << endl;
+  std::cout << prob_data[4] << " " << prob_data[5] << endl;
+  std::cout << prob_data[6] << " " << prob_data[7] << endl;
+  std::cout << prob_data[8] << " " << prob_data[9] << endl;
 }
 
 TYPED_TEST(OrdinalRegressionLossLayerTest, TestBackward) {
@@ -80,6 +92,13 @@ TYPED_TEST(OrdinalRegressionLossLayerTest, TestBackward) {
   propagate_down.push_back(true);
   propagate_down.push_back(false);
   layer->Backward(this->blob_top_vec_, propagate_down, this->blob_bottom_vec_);
+
+  const Dtype* bottom_diff_data = this->blob_bottom_data_->cpu_diff();
+  std::cout << bottom_diff_data[0] << " " << bottom_diff_data[1] << endl;
+  std::cout << bottom_diff_data[2] << " " << bottom_diff_data[3] << endl;
+  std::cout << bottom_diff_data[4] << " " << bottom_diff_data[5] << endl;
+  std::cout << bottom_diff_data[6] << " " << bottom_diff_data[7] << endl;
+  std::cout << bottom_diff_data[8] << " " << bottom_diff_data[9] << endl;
 }
 
 }  // namespace caffe

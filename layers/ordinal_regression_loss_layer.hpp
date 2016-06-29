@@ -22,6 +22,8 @@ class OrdinalRegressionLossLayer : public LossLayer<Dtype> {
 
   virtual inline const char* type() const { return "OrdinalRegressionLoss"; }
 
+  inline const Blob<Dtype>* prob() const { return &prob_; }
+
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);

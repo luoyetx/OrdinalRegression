@@ -61,11 +61,11 @@ void OrdinalRegressionLossLayer<Dtype>::Forward_cpu(
     const int offset = bottom[0]->offset(i);
     const Dtype* x = bottom_data + offset;
     Dtype* y = prob_data + offset;
-    for (int j = 0; j < m; j+=2) {
+    for (int j = 0; j < m; j += 2) {
       const Dtype max_input = std::max(x[j], x[j+1]);
       y[j] = std::exp(x[j] - max_input);
       y[j+1] = std::exp(x[j+1] - max_input);
-      Dtype sum = y[j] + y[j+1];
+      const Dtype sum = y[j] + y[j+1];
       y[j] /= sum;
       y[j+1] /= sum;
     }
@@ -77,10 +77,10 @@ void OrdinalRegressionLossLayer<Dtype>::Forward_cpu(
   for (int i = 0; i < n; i++) {
     const Dtype* y = prob_data + prob_.offset(i);
     const int label = static_cast<int>(label_data[i]);
-    for (int j = 0; j < label; j++) {
+    for (int j = 0; j <= label; j++) {
       loss -= weight_data[j] * std::log(std::max(y[2*j+1], Dtype(FLT_MIN)));
     }
-    for (int j = label; j < k_; j++) {
+    for (int j = label+1; j < k_; j++) {
       loss -= weight_data[j] * std::log(std::max(y[2*j], Dtype(FLT_MIN)));
     }
   }
@@ -104,10 +104,10 @@ void OrdinalRegressionLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>&
       const int offset = bottom[0]->offset(i);
       Dtype* dx = bottom_diff + offset;
       const int label = static_cast<int>(label_data[i]);
-      for (int j = 0; j < label; j++) {
+      for (int j = 0; j <= label; j++) {
         dx[2*j+1] -= 1;
       }
-      for (int j = label; j < k_; j++) {
+      for (int j = label+1; j < k_; j++) {
         dx[2*j] -= 1;
       }
       for (int j = 0; j < k_; j++) {
