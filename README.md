@@ -17,7 +17,11 @@ cp layers/test_ordinal_regression_loss_layer.cpp $CAFFE_HOME/src/caffe/test/test
 
 Modify `$CAFFE_HOME/src/caffe/proto/caffe.proto` according to `layers/caffe.proto`
 
-After all, compile Caffe with the documents and test it.
+After all, follow Caffe's documents and compile it.
+
+## Test the layer
+
+`make runtest GTEST_FILTER='OrdinalRegressionLossLayerTest/*'`
 
 ## References
 

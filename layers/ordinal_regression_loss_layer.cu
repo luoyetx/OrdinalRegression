@@ -5,7 +5,7 @@
 namespace caffe {
 
 template<typename Dtype>
-__global__ void kernel_ordreg_forward(const int k, const int n,
+__global__ void OrdinalRegressionLossForward(const int k, const int n,
     const Dtype* x, Dtype* y, const Dtype* label, const Dtype* weight, Dtype* loss) {
   CUDA_KERNEL_LOOP(idx, n) {
     const int sample_idx = idx / k;
@@ -45,7 +45,7 @@ void OrdinalRegressionLossLayer<Dtype>::Forward_gpu(
   const Dtype* weight = weight_.gpu_data();
   Dtype* y = prob_.mutable_gpu_data();
   Dtype* loss_data = bottom[0]->mutable_gpu_diff();  // reuse
-  kernel_ordreg_forward<Dtype><<<CAFFE_GET_BLOCKS(nthread),
+  OrdinalRegressionLossForward<Dtype><<<CAFFE_GET_BLOCKS(nthread),
       CAFFE_CUDA_NUM_THREADS>>>(k_, nthread, x, y, label, weight, loss_data);
   Dtype loss;
   caffe_gpu_asum(bottom[0]->count(), loss_data, &loss);
@@ -53,7 +53,7 @@ void OrdinalRegressionLossLayer<Dtype>::Forward_gpu(
 }
 
 template<typename Dtype>
-__global__ void kernel_ordreg_backward(const int k, const int n,
+__global__ void OrdinalRegressionLossBack(const int k, const int n,
     Dtype* dx, const Dtype* label, const Dtype* weight) {
   CUDA_KERNEL_LOOP(idx, n) {
     const int sample_idx = idx / k;
@@ -87,7 +87,7 @@ void OrdinalRegressionLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>&
     const Dtype* weight_data = weight_.gpu_data();
     Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
     caffe_gpu_memcpy(prob_.count() * sizeof(Dtype), prob_data, bottom_diff);
-    kernel_ordreg_backward<Dtype><<<CAFFE_GET_BLOCKS(nthread),
+    OrdinalRegressionLossBack<Dtype><<<CAFFE_GET_BLOCKS(nthread),
         CAFFE_CUDA_NUM_THREADS>>>(k_, nthread, bottom_diff, label_data, weight_data);
     const Dtype scale = 1.0 / n;
     caffe_gpu_scal<Dtype>(prob_.count(), scale, bottom_diff);
