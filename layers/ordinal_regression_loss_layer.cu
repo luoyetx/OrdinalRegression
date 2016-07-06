@@ -53,7 +53,7 @@ void OrdinalRegressionLossLayer<Dtype>::Forward_gpu(
 }
 
 template<typename Dtype>
-__global__ void OrdinalRegressionLossBack(const int k, const int n,
+__global__ void OrdinalRegressionLossBackward(const int k, const int n,
     Dtype* dx, const Dtype* label, const Dtype* weight) {
   CUDA_KERNEL_LOOP(idx, n) {
     const int sample_idx = idx / k;
@@ -87,7 +87,7 @@ void OrdinalRegressionLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>&
     const Dtype* weight_data = weight_.gpu_data();
     Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
     caffe_gpu_memcpy(prob_.count() * sizeof(Dtype), prob_data, bottom_diff);
-    OrdinalRegressionLossBack<Dtype><<<CAFFE_GET_BLOCKS(nthread),
+    OrdinalRegressionLossBackward<Dtype><<<CAFFE_GET_BLOCKS(nthread),
         CAFFE_CUDA_NUM_THREADS>>>(k_, nthread, bottom_diff, label_data, weight_data);
     const Dtype scale = 1.0 / n;
     caffe_gpu_scal<Dtype>(prob_.count(), scale, bottom_diff);

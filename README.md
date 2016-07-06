@@ -1,7 +1,7 @@
 Ordinal Regression
 ==================
 
-Caffe Loss Layer for Ordinal Regression with Multiple Output CNN for Age Estimation.
+Caffe Loss Layer for `Ordinal Regression with Multiple Output CNN for Age Estimation`.
 
 ## How to
 

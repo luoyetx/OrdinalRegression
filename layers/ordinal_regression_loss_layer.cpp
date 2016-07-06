@@ -36,7 +36,7 @@ void OrdinalRegressionLossLayer<Dtype>::LayerSetUp(
   }
   else {
     for (int i = 0; i < k_; i++) {
-      weight_data[i] = 1;
+      weight_data[i] = Dtype(1) / k_;
     }
   }
 }
