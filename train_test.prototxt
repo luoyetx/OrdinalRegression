@@ -1,0 +1,302 @@
+name: "Ordianl Regression 4 layers"
+layer {
+	top: "data"
+	type: "Data"
+	top: "label"
+	name: "data"
+	data_param {
+		source: "../data/lmdb_union/train"
+		batch_size: 256
+		backend: LMDB
+	}
+	transform_param {
+		crop_size: 60
+		mirror: true
+		mean_value: 128
+		mean_value: 128
+		mean_value: 128
+		scale: 0.0078125
+	}
+	include {
+		phase: TRAIN
+	}
+}
+layer {
+	top: "data"
+	top: "label"
+	name: "data"
+	type: "Data"
+
+	data_param {
+		source: "../data/lmdb_union/test"
+		batch_size: 256
+		backend: LMDB
+	}
+	transform_param {
+		crop_size: 60
+		mirror: false
+		mean_value: 128
+		mean_value: 128
+		mean_value: 128
+		scale: 0.0078125
+	}
+	include {
+		phase: TEST
+	}
+}
+
+
+
+
+
+layer {
+	bottom: "data"
+	name: "conv_1"
+	top: "conv_1"
+	type: "Convolution"
+	convolution_param {
+		num_output: 20
+		kernel_size: 5
+		pad: 0
+		weight_filler {
+     		type: "xavier"
+    	}
+    	bias_filler {
+      		type: "constant"
+    	}
+
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 0
+	}
+	param {
+		lr_mult: 2
+		decay_mult: 0
+	}
+}
+
+layer {
+	bottom: "conv_1"
+	name: "relu_1"
+	top: "conv_1"
+	type: "ReLU"
+}
+
+layer {
+	bottom: "conv_1"
+	name: "norm_1"
+	top: "norm_1"
+	type: "LRN"
+}
+layer {
+	bottom: "norm_1"
+	name: "pool_1"
+	top: "pool_1"
+	type: "Pooling"
+	pooling_param {
+		pool: MAX
+		kernel_size: 2
+		stride: 2
+	}
+}
+
+
+
+layer {
+	bottom: "pool_1"
+	name: "conv_2"
+	top: "conv_2"
+	type: "Convolution"
+	convolution_param {
+		num_output: 40
+		kernel_size: 7
+		weight_filler {
+     		type: "xavier"
+    	}
+    	bias_filler {
+      		type: "constant"
+    	}
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 0
+	}
+	param {
+		lr_mult: 2
+		decay_mult: 0
+	}
+}
+
+layer {
+	bottom: "conv_2"
+	name: "relu_2"
+	top: "conv_2"
+	type: "ReLU"
+}
+layer {
+	bottom: "conv_2"
+	name: "norm_2"
+	top: "norm_2"
+	type: "LRN"
+}
+layer {
+	bottom: "norm_2"
+	name: "pool_2"
+	top: "pool_2"
+	type: "Pooling"
+	pooling_param {
+		pool: MAX
+		kernel_size: 2
+		stride: 2
+	}
+}
+
+
+
+
+layer {
+	bottom: "pool_2"
+	name: "conv_3"
+	top: "conv_3"
+	type: "Convolution"
+	convolution_param {
+		num_output: 80
+		kernel_size: 11
+		weight_filler {
+     		type: "xavier"
+    	}
+    	bias_filler {
+      		type: "constant"
+    	}
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 0
+	}
+	param {
+		lr_mult: 2
+		decay_mult: 0
+	}
+}
+
+
+layer {
+	bottom: "conv_3"
+	name: "relu_3"
+	top: "conv_3"
+	type: "ReLU"
+}
+
+layer {
+	bottom: "conv_3"
+	name: "norm_3"
+	top: "norm_3"
+	type: "LRN"
+}
+
+layer {
+	bottom: "norm_3"
+	name: "fc"
+	top: "fc"
+	type: "InnerProduct"
+	inner_product_param {
+		num_output: 80
+		weight_filler {
+     		type: "xavier"
+    	}
+    	bias_filler {
+      		type: "constant"
+    	}
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 1
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 0
+	}
+}
+
+layer {
+	bottom: "fc"
+	name: "fc2"
+	top: "fc2"
+	type: "InnerProduct"
+	inner_product_param {
+		num_output: 160
+		weight_filler {
+			type: "xavier"
+		}
+		bias_filler {
+			type: "constant"
+		}
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 1
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 0
+	}
+}
+
+layer {
+	bottom: "fc2"
+	name: "fc_output"
+	top: "fc_output"
+	type: "InnerProduct"
+	inner_product_param {
+		num_output: 200
+		weight_filler {
+     		type: "xavier"
+    	}
+    	bias_filler {
+      		type: "constant"
+    	}
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 1
+	}
+	param {
+		lr_mult: 1
+		decay_mult: 0
+	}
+}
+
+layer {
+    bottom: "fc_output"
+    bottom: "label"
+    top: "mae"
+    name: "mae"
+    type: "MAE"
+}
+layer {
+	bottom: "fc_output"
+	bottom: "label"
+    top: "loss"
+	name: "loss"
+	type: "OrdinalRegressionLoss"
+	include {
+		phase: TRAIN
+	}
+    ordinal_regression_loss_param {
+	#	weight_file: "../data/lmdb_union/weight.txt"
+	}
+}
+layer {
+	bottom: "fc_output"
+	bottom: "label"
+    top: "loss"
+	name: "loss"
+	type: "OrdinalRegressionLoss"
+	include {
+		phase: TEST
+	}
+    ordinal_regression_loss_param {
+	#	weight_file: "../data/lmdb_union/weight.txt"
+	}
+}
